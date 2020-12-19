@@ -6,11 +6,12 @@ from typing import Tuple
 
 import numpy as np
 
-from apsg.core import Vec3, Fol, Lin, Group, Pair, PairSet, Fault
-from apsg.helpers import sind, cosd, atand
+from apsg._vector import Vec3
+from apsg._feature import Fol, Lin, Group, Pair, PairSet, Fault
+from apsg._helpers import sind, cosd, atand
 
 
-__all__ = ("DefGrad", "VelGrad", "Stress", "Ortensor", "Ellipsoid")
+__all__ = ("DefGrad", "VelGrad", "Stress", "Tensor", "Ortensor", "Ellipsoid")
 
 
 class DefGrad(np.ndarray):
@@ -28,21 +29,21 @@ class DefGrad(np.ndarray):
       >>> F = DefGrad(np.diag([2, 1, 0.5]))
     """
 
-    def __new__(cls, array, name='F'):
+    def __new__(cls, array, name="F"):
         # casting to our class
-        assert np.shape(array) == (3, 3), 'DefGrad must be 3x3 2D array'
+        assert np.shape(array) == (3, 3), "DefGrad must be 3x3 2D array"
         obj = np.asarray(array).view(cls)
         obj.name = name
         return obj
 
     def __repr__(self):
-        return 'DefGrad:\n' + str(self)
+        return "DefGrad:\n" + str(self)
 
     def __mul__(self, other):
         assert np.shape(other) == (
             3,
             3,
-        ), 'DefGrad could by multiplied with 3x3 2D array'
+        ), "DefGrad could by multiplied with 3x3 2D array"
         return DefGrad(np.dot(self, other))
 
     def __pow__(self, n):
@@ -120,8 +121,8 @@ class DefGrad(np.ndarray):
 
         """
 
-        assert Rxy >= 1, 'Rxy must be greater than or equal to 1.'
-        assert Ryz >= 1, 'Ryz must be greater than or equal to 1.'
+        assert Rxy >= 1, "Rxy must be greater than or equal to 1."
+        assert Ryz >= 1, "Ryz must be greater than or equal to 1."
 
         y = (Ryz / Rxy) ** (1 / 3)
         return cls.from_comp(xx=y * Rxy, yy=y, zz=y / Ryz)
@@ -129,7 +130,7 @@ class DefGrad(np.ndarray):
     @classmethod
     def from_pair(cls, p):
 
-        assert issubclass(type(p), Pair), 'Data must be of Pair type.'
+        assert issubclass(type(p), Pair), "Data must be of Pair type."
 
         return cls(np.array([p.lvec, p.fvec ** p.lvec, p.fvec]).T)
 
@@ -260,7 +261,7 @@ class DefGrad(np.ndarray):
         w, W = np.linalg.eig(R.T)
         i = np.where(abs(np.real(w) - 1.0) < 1e-8)[0]
         if not len(i):
-            raise ValueError('no unit eigenvector corresponding to eigenvalue 1')
+            raise ValueError("no unit eigenvector corresponding to eigenvalue 1")
         axis = Vec3(np.real(W[:, i[-1]]).squeeze())
         # rotation angle depending on direction
         cosa = (np.trace(R) - 1.0) / 2.0
@@ -311,9 +312,9 @@ class VelGrad(np.ndarray):
       >>> L = VelGrad(np.diag([0.1, 0, -0.1]))
     """
 
-    def __new__(cls, array, name='L'):
+    def __new__(cls, array, name="L"):
         # casting to our class
-        assert np.shape(array) == (3, 3), 'VelGrad must be 3x3 2D array'
+        assert np.shape(array) == (3, 3), "VelGrad must be 3x3 2D array"
         obj = np.asarray(array).view(cls)
         obj.name = name
         return obj
@@ -414,13 +415,13 @@ class Stress(np.ndarray):
       >>> S = Stress([[-8, 0, 0],[0, -5, 0],[0, 0, -1]])
     """
 
-    def __new__(cls, array, name='S'):
+    def __new__(cls, array, name="S"):
         # casting to our class
 
-        assert np.shape(array) == (3, 3), 'Stress must be 3x3 2D array'
+        assert np.shape(array) == (3, 3), "Stress must be 3x3 2D array"
         assert np.allclose(
             np.asarray(array), np.asarray(array).T
-        ), 'Stress tensor must be symmetrical'
+        ), "Stress tensor must be symmetrical"
 
         obj = np.asarray(array).view(cls)
         obj.name = name
@@ -432,7 +433,7 @@ class Stress(np.ndarray):
 
     def __repr__(self):
 
-        return 'Stress:\n' + str(self)
+        return "Stress:\n" + str(self)
 
     def __pow__(self, n):
         # matrix power
@@ -660,7 +661,7 @@ class Tensor(object):
         assert np.shape(matrix) == (3, 3), "Ellipsoid matrix must be 3x3 2D array"
 
         self._matrix = np.asarray(matrix)
-        self.name = kwargs.get('name', '')
+        self.name = kwargs.get("name", "")
         self.scaled = kwargs.get("scaled", False)
 
         vc, vv = np.linalg.eigh(self._matrix)
@@ -671,8 +672,8 @@ class Tensor(object):
 
     def __repr__(self) -> str:
         return (
-            '{}: {} Kind: {}\n'.format(self.__class__.__name__, self.name, self.kind)
-            + '(E1:{:.4g},E2:{:.4g},E3:{:.4g})\n'.format(self.E1, self.E2, self.E3)
+            "{}: {} Kind: {}\n".format(self.__class__.__name__, self.name, self.kind)
+            + "(E1:{:.4g},E2:{:.4g},E3:{:.4g})\n".format(self.E1, self.E2, self.E3)
             + str(self._matrix)
         )
 
@@ -691,7 +692,7 @@ class Tensor(object):
         return hash(tuple(map(tuple, self._matrix)))
 
     @classmethod
-    def from_comp(cls, xx=1, xy=0, xz=0, yy=1, yz=0, zz=1, **kwargs) -> 'Tensor':
+    def from_comp(cls, xx=1, xy=0, xz=0, yy=1, yz=0, zz=1, **kwargs) -> "Tensor":
         """
         Return tensor. Default is identity tensor.
 
@@ -701,7 +702,7 @@ class Tensor(object):
         return cls([[xx, xy, xz], [xy, yy, yz], [xz, yz, zz]], **kwargs)
 
     @classmethod
-    def from_axes(cls, x=1, y=1, z=1, **kwargs) -> 'Tensor':
+    def from_axes(cls, x=1, y=1, z=1, **kwargs) -> "Tensor":
         """
         Return diagonal tensor defined by principal axes.
         """
@@ -767,17 +768,17 @@ class Tensor(object):
         """
         nu = self.lode
         if np.allclose(self.eoct, 0):
-            res = 'O'
+            res = "O"
         elif nu < -0.75:
-            res = 'L'
+            res = "L"
         elif nu > 0.75:
-            res = 'S'
+            res = "S"
         elif nu < -0.15:
-            res = 'LLS'
+            res = "LLS"
         elif nu > 0.15:
-            res = 'SSL'
+            res = "SSL"
         else:
-            res = 'LS'
+            res = "LS"
         return res
 
     @property
@@ -895,7 +896,7 @@ class Tensor(object):
     def lode(self) -> float:
         """
         Return Lode parameter (Lode, 1926).
-         """
+        """
         return (
             (2 * self.e2 - self.e1 - self.e3) / (self.e1 - self.e3)
             if (self.e1 - self.e3) > 0
@@ -903,7 +904,7 @@ class Tensor(object):
         )
 
     @property
-    def I(self) -> 'Tensor':
+    def I(self) -> "Tensor":
         """
         Return the inverse tensor.
         """
@@ -953,13 +954,13 @@ class Ortensor(Tensor):
 
     def __init__(self, matrix, **kwargs) -> None:
         if isinstance(matrix, Group):
-            if not 'name' in kwargs:
-                kwargs['name'] = matrix.name
+            if not "name" in kwargs:
+                kwargs["name"] = matrix.name
             matrix = np.dot(np.array(matrix).T, np.array(matrix)) / len(matrix)
         super(Ortensor, self).__init__(matrix, **kwargs)
 
     @classmethod
-    def from_group(cls, g, **kwargs) -> 'Ortensor':
+    def from_group(cls, g, **kwargs) -> "Ortensor":
         """
         Return ``Ortensor`` of data in ``Group``
 
@@ -980,12 +981,12 @@ class Ortensor(Tensor):
 
         """
 
-        if not 'name' in kwargs:
-            kwargs['name'] = g.name
+        if not "name" in kwargs:
+            kwargs["name"] = g.name
         return cls(np.dot(np.array(g).T, np.array(g)) / len(g), **kwargs)
 
     @classmethod
-    def from_pairs(cls, p, **kwargs) -> 'Ortensor':
+    def from_pairs(cls, p, **kwargs) -> "Ortensor":
         """
         Return Lisle (19890``Ortensor`` of orthogonal data in ``PairSet``
 
@@ -1013,8 +1014,8 @@ class Ortensor(Tensor):
 
         """
         assert isinstance(p, PairSet), "Data must be of PairSet type."
-        if not 'name' in kwargs:
-            kwargs['name'] = p.name
+        if not "name" in kwargs:
+            kwargs["name"] = p.name
         Tx = np.dot(np.array(p.lin).T, np.array(p.lin)) / len(p)
         Tz = np.dot(np.array(p.fol).T, np.array(p.fol)) / len(p)
         return cls(Tx - Tz, **kwargs)
@@ -1136,7 +1137,7 @@ class Ellipsoid(Tensor):
     """
 
     @classmethod
-    def from_defgrad(cls, F, **kwargs) -> 'Ellipsoid':
+    def from_defgrad(cls, F, **kwargs) -> "Ellipsoid":
         """
         Return ``Ellipsoid`` from ``Defgrad``.
 
@@ -1146,7 +1147,7 @@ class Ellipsoid(Tensor):
 
         return cls(np.dot(F, np.transpose(F)), **kwargs)
 
-    def transform(self, F) -> 'Ellipsoid':
+    def transform(self, F) -> "Ellipsoid":
         """
         Return ``Ellipsoid`` representing result of deformation F
         """

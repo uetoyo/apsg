@@ -45,12 +45,12 @@ setup(
         "docs": ["sphinx"],
         "test": ["pytest", "radon"],
         "lint": ["black", "pylint"],
-        "jupyter": ["jupyterlab"],
+        "lab": ["jupyterlab"],
     },
     project_urls={
-        'Documentation': 'https://apsg.readthedocs.io/',
-        'Source Code': 'https://github.com/ondrolexa/apsg/',
-        'Bug Tracker': 'https://github.com/ondrolexa/apsg/issues/',
+        "Documentation": "https://apsg.readthedocs.io/",
+        "Source Code": "https://github.com/ondrolexa/apsg/",
+        "Bug Tracker": "https://github.com/ondrolexa/apsg/issues/",
     },
     entry_points="""
     [console_scripts]

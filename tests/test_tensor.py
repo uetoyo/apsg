@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Test the tensor classes.
+Test the `tensor` module classes and functions.
 """
 
 import numpy as np
@@ -9,6 +9,7 @@ import numpy as np
 from apsg import Tensor, DefGrad, VelGrad, Stress, Ortensor, Lin, Vec3, Fol, Group
 
 # Tensor type is value object => structural equality
+
 
 def test_that_tensors_are_equal_and_has_same_hash(helpers):
     lhs = Tensor([[1, 1, 1], [2, 2, 3], [3, 3, 3]])
@@ -25,7 +26,9 @@ def test_that_tensors_are_not_equal_and_has_different_hash(helpers):
 
 
 def test_tensor_repr_and_str():
-    assert "Tensor: T Kind: L\n(E1:2,E2:1,E3:1)\n[[2 1 1]\n [1 2 1]\n [1 1 2]]" == str(Tensor([[2, 1, 1], [1, 2, 1], [1,1, 2]], name='T'))
+    assert "Tensor: T Kind: L\n(E1:2,E2:1,E3:1)\n[[2 1 1]\n [1 2 1]\n [1 1 2]]" == str(
+        Tensor([[2, 1, 1], [1, 2, 1], [1, 1, 2]], name="T")
+    )
 
 
 # Ortensor
@@ -33,7 +36,11 @@ def test_tensor_repr_and_str():
 
 def test_ortensor_uniform():
     f = Fol.rand()
-    assert np.allclose(Ortensor.from_group(Group([f.V, f.rake(-45), f.rake(45)]))._evals, np.ones(3) / 3)
+    assert np.allclose(
+        Ortensor.from_group(Group([f.V, f.rake(-45), f.rake(45)]))._evals,
+        np.ones(3) / 3,
+    )
+
 
 # DefGrad
 
@@ -67,7 +74,9 @@ def test_stress_component():
     S = Stress.from_comp(xx=2, yy=2, zz=1, xy=1, xz=3, yz=-2)
     n = Vec3([1, 2, -2]).uv
     sn, tau = S.stress_comp(n)
-    assert np.allclose([abs(sn), abs(tau)], [abs(S.normal_stress(n)), S.shear_stress(n)])
+    assert np.allclose(
+        [abs(sn), abs(tau)], [abs(S.normal_stress(n)), S.shear_stress(n)]
+    )
 
 
 def test_stress_invariants_calculation():

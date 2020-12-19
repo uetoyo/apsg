@@ -6,7 +6,7 @@ API to read data from PySDB database
 
 import sqlite3
 import os.path
-from apsg.core import Fol, Lin, Group
+from apsg._feature import Fol, Lin, Group
 
 
 __all__ = ("SDB",)
@@ -34,7 +34,7 @@ class SDB(object):
     ORDER BY sites.name"""
 
     def __new__(cls, db):
-        assert os.path.isfile(db), 'Database does not exists.'
+        assert os.path.isfile(db), "Database does not exists."
         cls.conn = sqlite3.connect(db)
         cls.conn.row_factory = sqlite3.Row
         cls.conn.execute("pragma encoding='UTF-8'")
@@ -86,9 +86,9 @@ class SDB(object):
                 print("Metadata '{}' not updated.".format(name))
                 raise
 
-    def info(self, report='basic'):
+    def info(self, report="basic"):
         lines = []
-        if report == 'basic':
+        if report == "basic":
             lines.append("PySDB database version: {}".format(self.meta("version")))
             lines.append("PySDB database CRS: {}".format(self.meta("crs")))
             lines.append("PySDB database created: {}".format(self.meta("created")))
@@ -98,20 +98,20 @@ class SDB(object):
             lines.append("Number of structures: {}".format(len(self.structures())))
             r = self.execsql(self._make_select())
             lines.append("Number of measurements: {}".format(len(r)))
-        elif report == 'data':
+        elif report == "data":
             for s in self.structures():
                 r = self.execsql(self._make_select(structs=s))
                 if len(r) > 0:
                     lines.append("Number of {} measurements: {}".format(s, len(r)))
-        elif report == 'tags':
+        elif report == "tags":
             for s in self.structures():
                 r = self.execsql(self._make_select(tags=s))
                 if len(r) > 0:
                     lines.append("{} measurements tagged as {}.".format(len(r), s))
         else:
-            lines.append('No report.')
+            lines.append("No report.")
 
-        return '\n'.join(lines)
+        return "\n".join(lines)
 
     def _make_select(self, structs=None, sites=None, units=None, tags=None):
         w = []
@@ -174,7 +174,7 @@ class SDB(object):
             return sorted(list(res))
         else:
             dtsel = "SELECT structure FROM structype ORDER BY pos"
-            return [el['structure'] for el in self.execsql(dtsel)]
+            return [el["structure"] for el in self.execsql(dtsel)]
 
     def sites(self, **kwargs):
         """Return list of sites in data. For kwargs see group method."""
@@ -184,7 +184,7 @@ class SDB(object):
             return sorted(list(res))
         else:
             dtsel = "SELECT name FROM sites ORDER BY id"
-            return [el['name'] for el in self.execsql(dtsel)]
+            return [el["name"] for el in self.execsql(dtsel)]
 
     def units(self, **kwargs):
         """Return list of units in data. For kwargs see group method."""
@@ -194,7 +194,7 @@ class SDB(object):
             return sorted(list(res))
         else:
             dtsel = "SELECT name FROM units ORDER BY pos"
-            return [el['name'] for el in self.execsql(dtsel)]
+            return [el["name"] for el in self.execsql(dtsel)]
 
     def tags(self, **kwargs):
         """Return list of tags in data. For kwargs see group method."""
@@ -204,7 +204,7 @@ class SDB(object):
             return sorted(list(set(",".join(tags).split(","))))
         else:
             dtsel = "SELECT name FROM tags ORDER BY pos"
-            return [el['name'] for el in self.execsql(dtsel)]
+            return [el["name"] for el in self.execsql(dtsel)]
 
     def is_planar(self, struct):
         tpsel = "SELECT planar FROM structype WHERE structure='{}'".format(struct)
@@ -228,11 +228,13 @@ class SDB(object):
         if sel:
             if self.is_planar(struct):
                 res = Group(
-                    [Fol(el["azimuth"], el["inclination"]) for el in sel], name=struct,
+                    [Fol(el["azimuth"], el["inclination"]) for el in sel],
+                    name=struct,
                 )
             else:
                 res = Group(
-                    [Lin(el["azimuth"], el["inclination"]) for el in sel], name=struct,
+                    [Lin(el["azimuth"], el["inclination"]) for el in sel],
+                    name=struct,
                 )
             return res
         else:
